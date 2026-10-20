@@ -37,11 +37,14 @@ portfolio's experience and achievements consistent when updating either.
 
 ## Hosting
 
+The portfolio is hosted on GitHub Pages at https://siddheshtodi.me.
+The custom domain is recorded in `public/CNAME` and copied into the build output.
+
 `npm run build` generates `dist/blog/index.html`, an entry page for every post,
 and a general `404.html`, so known blog URLs work when opened directly on GitHub
 Pages. The workflow derives the asset base path from the GitHub Pages configuration.
 For a manual build under a subdirectory, set `VITE_BASE_PATH` to that path, ending
-with `/`. Vercel rewrites are configured in `vercel.json` for client-side routes.
+with `/`. Builds for `siddheshtodi.me` use the root path `/`.
 
 ## Portfolio terminal
 

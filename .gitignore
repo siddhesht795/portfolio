@@ -1,7 +1,6 @@
 node_modules/
 dist/
 build/
-.vercel/
 CLAUDE.md
 BUILD_PROGRESS.md
 portfolio-1.mp4
