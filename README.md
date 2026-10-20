@@ -48,6 +48,10 @@ with `/`. Builds for `siddheshtodi.me` use the root path `/`.
 
 ## Portfolio terminal
 
+Click or tap the terminal to focus the prompt, type a command, and press Enter.
+A subtle pointer-following "Try me!" hint appears on mouse hover until the terminal
+is focused. Touch devices show a tap-to-type cue instead.
+
 The terminal supports `help`, `whoami`, `ls`, `skills`, `projects`, `blog`, `resume`,
 `contact`, `theme`, and `clear`. Use the up/down arrows for command history, Tab to
 complete a unique command, or Ctrl+L to clear the output. It navigates and displays

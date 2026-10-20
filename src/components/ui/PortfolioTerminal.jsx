@@ -70,29 +70,53 @@ export default function PortfolioTerminal() {
       }
     }
   }
+  const moveHint = (event) => {
+    const terminal = event.currentTarget
+    if (event.pointerType !== 'mouse' || event.buttons !== 0) {
+      delete terminal.dataset.pointerInside
+      return
+    }
+    const bounds = terminal.getBoundingClientRect()
+    // Keep the hint inside the shell, including near the viewport edges.
+    const x = Math.max(8, Math.min(event.clientX - bounds.left + 16, bounds.width - 90))
+    const y = Math.max(8, Math.min(event.clientY - bounds.top + 18, bounds.height - 40))
+    terminal.style.setProperty('--hint-x', `${x}px`)
+    terminal.style.setProperty('--hint-y', `${y}px`)
+    terminal.dataset.pointerInside = 'true'
+  }
   return (
     <div
       id="terminal"
       className="portfolio-terminal"
+      role="region"
       aria-label="Interactive portfolio terminal"
+      onPointerMove={moveHint}
+      onPointerLeave={(event) => {
+        delete event.currentTarget.dataset.pointerInside
+      }}
+      onPointerDown={(event) => {
+        delete event.currentTarget.dataset.pointerInside
+      }}
+      onClick={(event) => {
+        if (event.target.closest('input, button, a')) return
+        if (window.getSelection()?.toString()) return
+        inputRef.current?.focus({ preventScroll: true })
+      }}
     >
       <div className="terminal-title">
         <span>
           <TerminalSquare size={14} aria-hidden="true" />
-          siddhesh@portfolio:~
+          siddhesh@portfolio: ~
         </span>
-        <button
-          type="button"
-          onClick={() => inputRef.current?.focus()}
-          aria-label="Focus terminal input"
-        >
-          Interactive
-        </button>
+        <span className="terminal-interaction-hint" aria-hidden="true">
+          <span className="terminal-mouse-hint">click to type</span>
+          <span className="terminal-touch-hint">tap to type</span>
+        </span>
       </div>
       <div className="terminal-content">
-        <p className="terminal-welcome">A different way to look around.</p>
-        <p className="terminal-hint">
-          Type <kbd>help</kbd> to get started. ↑ ↓ for history.
+        <p className="terminal-welcome">Welcome to my portfolio.</p>
+        <p id="terminal-instructions" className="terminal-hint">
+          Type <code>help</code> to explore. Press Enter to run.
         </p>
         <div
           className="terminal-log"
@@ -101,14 +125,14 @@ export default function PortfolioTerminal() {
           aria-live="polite"
           aria-relevant="additions"
           data-lenis-prevent
-          tabIndex={0}
+          tabIndex={entries.length ? 0 : -1}
           aria-label="Terminal output"
         >
           {entries.map((entry, index) => (
             <div className="terminal-entry" key={index}>
               <p>
                 <span className="terminal-prompt" aria-hidden="true">
-                  ${' '}
+                  ~ ${' '}
                 </span>
                 {entry.command}
               </p>
@@ -123,37 +147,35 @@ export default function PortfolioTerminal() {
             execute(input)
           }}
         >
-          <span className="terminal-prompt" aria-hidden="true">
-            $
-          </span>
+          <span className="terminal-prompt" aria-hidden="true">~ $</span>
           <label htmlFor="terminal-input" className="sr-only">
-            Portfolio command
+            Type a portfolio command
           </label>
-          <input
-            ref={inputRef}
-            id="terminal-input"
-            value={input}
-            maxLength={120}
-            onChange={(event) => setInput(event.target.value)}
-            onKeyDown={onKeyDown}
-            placeholder="Try whoami"
-            autoComplete="off"
-            autoCapitalize="none"
-            spellCheck={false}
-          />
-          <button type="submit" aria-label="Run command">
-            ↵
-          </button>
+          <div className="terminal-input-line">
+            <input
+              ref={inputRef}
+              id="terminal-input"
+              value={input}
+              maxLength={120}
+              onChange={(event) => setInput(event.target.value)}
+              onKeyDown={onKeyDown}
+              placeholder=" "
+              aria-describedby="terminal-instructions terminal-keyboard-hint"
+              autoComplete="off"
+              autoCapitalize="none"
+              enterKeyHint="go"
+              spellCheck={false}
+            />
+            <span className="terminal-idle-caret" aria-hidden="true" />
+          </div>
         </form>
       </div>
-      <div className="terminal-suggestions">
-        <span>Try</span>
-        {['whoami', 'skills', 'projects'].map((command) => (
-          <button key={command} type="button" onClick={() => execute(command)}>
-            {command}
-          </button>
-        ))}
-      </div>
+      <p id="terminal-keyboard-hint" className="terminal-keyboard-hint">
+        <span>↑ ↓ history</span>
+        <span>Tab complete</span>
+        <span>Ctrl+L clear</span>
+      </p>
+      <span className="terminal-cursor-hint" aria-hidden="true">Try me!</span>
     </div>
   )
 }

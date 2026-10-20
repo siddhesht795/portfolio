@@ -105,7 +105,9 @@ async function flushFrames() {
 }
 async function click(label, selector = 'a') {
   const element = [...document.querySelectorAll(selector)].find(
-    (item) => item.textContent.trim() === label
+    (item) =>
+      item.textContent.trim() === label ||
+      item.querySelector('code')?.textContent.trim() === label
   )
   assert.ok(element, `Missing control: ${label}`)
   await act(async () =>
@@ -120,50 +122,90 @@ test('homepage, index, article and navbar preserve navigation and scroll', async
     await act(async () => root.render(createElement(App)))
     await flushFrames()
     const originalAbout = document.getElementById('about')
-    // Terminal buttons, form submission, history, and theme changes remain usable.
-    await click('whoami', 'button')
-    assert.match(
-      document.querySelector('[role=log]').textContent,
-      /Siddhesh Todi/
-    )
+    const terminal = document.getElementById('terminal')
     const commandInput = document.getElementById('terminal-input')
+    const setInputValue = Object.getOwnPropertyDescriptor(
+      window.HTMLInputElement.prototype,
+      'value'
+    ).set
+    async function typeCommand(value) {
+      await act(async () => {
+        setInputValue.call(commandInput, value)
+        commandInput.dispatchEvent(new window.Event('input', { bubbles: true }))
+      })
+    }
+    async function submitCommand() {
+      await act(async () =>
+        document.querySelector('.terminal-form').dispatchEvent(
+          new window.Event('submit', { bubbles: true, cancelable: true })
+        )
+      )
+      await flushFrames()
+    }
+    // The mouse hint follows the pointer, stays inside the shell, and clears on exit.
+    const pointerMove = new MouseEvent('pointermove', {
+      bubbles: true, clientX: 995, clientY: 395, buttons: 0,
+    })
+    Object.defineProperty(pointerMove, 'pointerType', { value: 'mouse' })
+    await act(async () => terminal.dispatchEvent(pointerMove))
+    assert.equal(terminal.dataset.pointerInside, 'true')
+    assert.equal(terminal.style.getPropertyValue('--hint-x'), '910px')
+    assert.equal(terminal.style.getPropertyValue('--hint-y'), '360px')
+    await act(async () => terminal.dispatchEvent(
+      new MouseEvent('pointerout', { bubbles: true, relatedTarget: document.body })
+    ))
+    assert.equal(terminal.dataset.pointerInside, undefined)
+    const touchMove = new MouseEvent('pointermove', { bubbles: true })
+    Object.defineProperty(touchMove, 'pointerType', { value: 'touch' })
+    await act(async () => terminal.dispatchEvent(touchMove))
+    assert.equal(terminal.dataset.pointerInside, undefined)
+    // Clicking shell space focuses the prompt, while selecting output keeps selection.
+    await act(async () => document.querySelector('.terminal-content').click())
+    assert.equal(document.activeElement, commandInput)
+    await typeCommand('whoami')
+    await submitCommand()
+    assert.match(document.querySelector('[role=log]').textContent, /Siddhesh Todi/)
     await act(async () =>
       commandInput.dispatchEvent(
         new window.KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })
       )
     )
     assert.equal(commandInput.value, 'whoami')
-    const setInputValue = Object.getOwnPropertyDescriptor(
-      window.HTMLInputElement.prototype,
-      'value'
-    ).set
-    await act(async () => {
-      setInputValue.call(commandInput, 'theme')
-      commandInput.dispatchEvent(new window.Event('input', { bubbles: true }))
-    })
+    const output = document.querySelector('.terminal-entry pre')
+    const outsideButton = document.querySelector('.workspace-brand')
+    outsideButton.focus()
+    const range = document.createRange()
+    range.selectNodeContents(output)
+    window.getSelection().removeAllRanges()
+    window.getSelection().addRange(range)
+    await act(async () => output.click())
+    assert.ok(document.activeElement === outsideButton, 'Selecting output must not focus the prompt')
+    assert.match(window.getSelection().toString(), /Siddhesh Todi/)
+    window.getSelection().removeAllRanges()
+    await typeCommand('theme')
     const previousTheme = document.documentElement.getAttribute('data-theme')
+    await submitCommand()
+    assert.notEqual(document.documentElement.getAttribute('data-theme'), previousTheme)
+    // Tab autocomplete and keyboard clearing remain available without extra controls.
+    await typeCommand('ski')
     await act(async () =>
-      document
-        .querySelector('.terminal-form')
-        .dispatchEvent(
-          new window.Event('submit', { bubbles: true, cancelable: true })
-        )
+      commandInput.dispatchEvent(
+        new window.KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true })
+      )
     )
-    assert.notEqual(
-      document.documentElement.getAttribute('data-theme'),
-      previousTheme
-    )
+    assert.equal(commandInput.value, 'skills')
+    await submitCommand()
+    assert.match(document.querySelector('[role=log]').textContent, /FastAPI/)
     await act(async () =>
       commandInput.dispatchEvent(
         new window.KeyboardEvent('keydown', {
-          key: 'l',
-          ctrlKey: true,
-          bubbles: true,
+          key: 'l', ctrlKey: true, bubbles: true,
         })
       )
     )
     assert.equal(document.querySelector('[role=log]').textContent, '')
-    await click('projects', 'button')
+    await typeCommand('projects')
+    await submitCommand()
     assert.equal(window.scrollY, 3304)
     const menuToggle = document.querySelector(
       '[aria-controls=workspace-navigation]'
