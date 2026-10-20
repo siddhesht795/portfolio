@@ -10,11 +10,14 @@ export function getLenis() {
 }
 
 export function scrollToSection(id, options = {}) {
-  const target = id === 'top' ? 0 : `#${id}`
+  const element = id === 'top' ? null : document.getElementById(id)
+  if (id !== 'top' && !element) return
+  const target = id === 'top' ? 0 : element
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   if (lenis) {
-    lenis.scrollTo(target, { offset: -72, duration: 1.4, ...options })
+    lenis.scrollTo(target, { offset: id === 'top' ? 0 : -96, duration: 1.4, immediate: reducedMotion, ...options })
   } else {
-    const el = id === 'top' ? document.body : document.getElementById(id)
-    el?.scrollIntoView({ behavior: 'smooth' })
+    const top = element ? Math.max(0, element.getBoundingClientRect().top + window.scrollY - 96) : 0
+    window.scrollTo({ top, behavior: reducedMotion || options.immediate ? 'instant' : 'smooth' })
   }
 }

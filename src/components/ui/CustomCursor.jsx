@@ -11,6 +11,7 @@ export default function CustomCursor() {
   const posRef = useRef({ x: -100, y: -100 })
 
   useEffect(() => {
+    if (window.matchMedia('(pointer: coarse)').matches) return
     const move = (e) => {
       posRef.current = { x: e.clientX, y: e.clientY }
       setPos({ x: e.clientX, y: e.clientY })
@@ -22,13 +23,11 @@ export default function CustomCursor() {
     document.addEventListener('mouseenter', enter)
     document.addEventListener('mouseleave', leave)
 
-    const handleHover = () => {
-      document.querySelectorAll('a, button, [data-cursor]').forEach((el) => {
-        el.addEventListener('mouseenter', () => setHovered(true))
-        el.addEventListener('mouseleave', () => setHovered(false))
-      })
+    const hover = (event) => {
+      setHovered(Boolean(event.target instanceof Element && event.target.closest('a, button, [data-cursor]')))
     }
-    handleHover()
+    document.addEventListener('mouseover', hover)
+    document.addEventListener('focusin', hover)
 
     const animate = () => {
       trailRef.current = {
@@ -44,6 +43,8 @@ export default function CustomCursor() {
       window.removeEventListener('mousemove', move)
       document.removeEventListener('mouseenter', enter)
       document.removeEventListener('mouseleave', leave)
+      document.removeEventListener('mouseover', hover)
+      document.removeEventListener('focusin', hover)
       cancelAnimationFrame(reqRef.current)
     }
   }, [])

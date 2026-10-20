@@ -1,174 +1,204 @@
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Sun, Moon } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import {
+  ChevronDown,
+  FileCode2,
+  FileText,
+  FolderOpen,
+  Github,
+  Menu,
+  Moon,
+  Sun,
+  TerminalSquare,
+  X,
+} from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
+import { personal } from '../../data'
 import { scrollToSection } from '../../lib/scroll'
 
-const links = ['About', 'Skills', 'Blog', 'Projects', 'Experience', 'Resume', 'Contact']
+const files = [
+  { label: 'About', extension: '.md' },
+  { label: 'Skills', extension: '.json' },
+  { label: 'Projects', extension: '.tsx' },
+  { label: 'Experience', extension: '.md' },
+  { label: 'Blog', extension: '/' },
+  { label: 'Resume', extension: '.pdf' },
+  { label: 'Contact', extension: '.md' },
+]
 
 export default function Navbar() {
-  const { isDark, toggle: onToggleTheme } = useTheme()
-  const [scrolled, setScrolled] = useState(false)
+  const { isDark, toggle } = useTheme()
+  const location = useLocation()
+  const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [activeSection, setActiveSection] = useState('')
+  const [active, setActive] = useState('')
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40)
-    window.addEventListener('scroll', onScroll)
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-  useEffect(() => {
+    setActive(location.pathname.startsWith('/blog') ? 'blog' : '')
+    setMenuOpen(false)
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) setActiveSection(e.target.id)
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setActive(entry.target.id)
         })
       },
-      { threshold: 0.4 }
+      { rootMargin: '-96px 0px -60% 0px', threshold: 0 },
     )
-    links.forEach((l) => {
-      const el = document.getElementById(l.toLowerCase())
-      if (el) observer.observe(el)
+    files.forEach(({ label }) => {
+      const section = document.getElementById(label.toLowerCase())
+      if (section) observer.observe(section)
     })
     return () => observer.disconnect()
-  }, [])
+  }, [location.pathname])
 
-  const scrollTo = (id) => {
-    scrollToSection(id.toLowerCase())
+  useEffect(() => {
+    if (!menuOpen) return
+    const close = (event) => {
+      if (event.key === 'Escape') setMenuOpen(false)
+    }
+    window.addEventListener('keydown', close)
+    return () => window.removeEventListener('keydown', close)
+  }, [menuOpen])
+
+  const go = (section) => {
+    if (location.pathname !== '/')
+      navigate(section === 'top' ? '/' : `/#${section}`)
+    else {
+      scrollToSection(section)
+      if (section === 'terminal')
+        document
+          .getElementById('terminal-input')
+          ?.focus({ preventScroll: true })
+    }
     setMenuOpen(false)
   }
-
+  const isBlog = location.pathname.startsWith('/blog')
   return (
     <>
-      <motion.nav
-        initial={{ y: -80, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scrolled ? 'py-3' : 'py-6'
-        }`}
-      >
-        <div
-          className={`mx-auto max-w-7xl px-6 flex items-center justify-between transition-all duration-500 ${
-            scrolled
-              ? 'bg-bg/80 backdrop-blur-xl border border-border/50 rounded-2xl py-3 px-6 shadow-2xl shadow-black/40'
-              : ''
-          }`}
+      <a href="#main-content" className="skip-link">
+        Skip to content
+      </a>
+      <header className="workspace-header">
+        <button
+          type="button"
+          className="workspace-brand"
+          onClick={() => go('top')}
+          aria-label="Siddhesh Todi home"
         >
-          {/* Logo */}
-          <button onClick={() => scrollToSection('top')} className="group">
-            <span className="font-display font-bold text-xl text-text-primary tracking-tight">
-              ST
-              <span className="text-accent group-hover:text-cyan transition-colors duration-300">.</span>
-            </span>
-          </button>
-
-          {/* Desktop links */}
-          <div className="hidden md:flex items-center gap-8">
-            {links.map((link) => (
-              <button
-                key={link}
-                onClick={() => scrollTo(link)}
-                className="relative font-body text-sm font-medium text-text-secondary hover:text-text-primary transition-colors duration-300 group"
-              >
-                {link}
-                <span
-                  className={`absolute -bottom-1 left-0 h-px bg-accent transition-all duration-300 ${
-                    activeSection === link.toLowerCase() ? 'w-full' : 'w-0 group-hover:w-full'
-                  }`}
-                />
-              </button>
-            ))}
-          </div>
-
-          {/* Theme toggle + CTA */}
-          <div className="hidden md:flex items-center gap-3">
-            <motion.button
-              onClick={onToggleTheme}
-              whileTap={{ scale: 0.88 }}
-              className="relative w-9 h-9 rounded-xl border border-border flex items-center justify-center text-muted hover:text-text-primary hover:border-accent/40 transition-all duration-300 overflow-hidden"
-              aria-label="Toggle theme"
-            >
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.span
-                  key={isDark ? 'moon' : 'sun'}
-                  initial={{ y: -16, opacity: 0, rotate: -30 }}
-                  animate={{ y: 0, opacity: 1, rotate: 0 }}
-                  exit={{ y: 16, opacity: 0, rotate: 30 }}
-                  transition={{ duration: 0.2 }}
-                  className="absolute flex items-center justify-center"
-                >
-                  {isDark ? <Sun size={15} /> : <Moon size={15} />}
-                </motion.span>
-              </AnimatePresence>
-            </motion.button>
-
-            <a
-              href="mailto:siddheshtodi@gmail.com"
-              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-accent/30 text-accent text-sm font-medium hover:bg-accent/10 hover:border-accent transition-all duration-300"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-              Available
-            </a>
-          </div>
-
-          {/* Mobile hamburger */}
+          <FileCode2 size={19} aria-hidden="true" />
+          <span>
+            siddhesh<span className="text-muted"> / portfolio</span>
+          </span>
+        </button>
+        <div className="workspace-actions">
           <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="md:hidden flex flex-col gap-1.5 p-2"
+            type="button"
+            className="terminal-shortcut"
+            onClick={() => go('terminal')}
           >
-            <motion.span
-              animate={menuOpen ? { rotate: 45, y: 8 } : { rotate: 0, y: 0 }}
-              className="block w-6 h-px bg-text-primary origin-center transition-all"
-            />
-            <motion.span
-              animate={menuOpen ? { opacity: 0 } : { opacity: 1 }}
-              className="block w-6 h-px bg-text-primary"
-            />
-            <motion.span
-              animate={menuOpen ? { rotate: -45, y: -8 } : { rotate: 0, y: 0 }}
-              className="block w-6 h-px bg-text-primary origin-center"
-            />
+            <TerminalSquare size={15} aria-hidden="true" /> Terminal
+          </button>
+          <a
+            className="icon-button"
+            href={personal.github}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="GitHub profile"
+          >
+            <Github size={17} />
+          </a>
+          <button
+            type="button"
+            className="icon-button"
+            onClick={toggle}
+            aria-label={
+              isDark ? 'Switch to light theme' : 'Switch to dark theme'
+            }
+          >
+            {isDark ? <Sun size={17} /> : <Moon size={17} />}
+          </button>
+          <button
+            type="button"
+            className="icon-button mobile-menu-toggle"
+            aria-label={menuOpen ? 'Close navigation' : 'Open navigation'}
+            aria-expanded={menuOpen}
+            aria-controls="workspace-navigation"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            {menuOpen ? <X size={19} /> : <Menu size={19} />}
           </button>
         </div>
-      </motion.nav>
-
-      {/* Mobile menu */}
-      <AnimatePresence>
-        {menuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-0 z-40 bg-bg/95 backdrop-blur-2xl flex flex-col items-center justify-center gap-8"
+      </header>
+      {menuOpen && (
+        <button
+          type="button"
+          className="sidebar-backdrop"
+          aria-label="Dismiss navigation"
+          onClick={() => setMenuOpen(false)}
+        />
+      )}
+      <nav
+        id="workspace-navigation"
+        aria-label="Portfolio sections"
+        className={`workspace-sidebar ${menuOpen ? 'is-open' : ''}`}
+      >
+        <p className="sidebar-caption">Explorer</p>
+        <div className="sidebar-folder">
+          <ChevronDown size={14} />
+          <FolderOpen size={15} />
+          <span>portfolio</span>
+        </div>
+        <button
+          type="button"
+          className={`file-link ${!active && !isBlog ? 'is-active' : ''}`}
+          onClick={() => go('top')}
+        >
+          <FileText size={15} aria-hidden="true" />
+          README.md
+        </button>
+        {files.map(({ label, extension }) => (
+          <button
+            type="button"
+            key={label}
+            onClick={() => go(label.toLowerCase())}
+            aria-current={
+              active === label.toLowerCase() ? 'location' : undefined
+            }
+            className={`file-link ${active === label.toLowerCase() ? 'is-active' : ''}`}
           >
-            {links.map((link, i) => (
-              <motion.button
-                key={link}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.08 }}
-                onClick={() => scrollTo(link)}
-                className="font-display font-bold text-4xl text-text-primary hover:text-accent transition-colors duration-300"
-              >
-                {link}
-              </motion.button>
-            ))}
-            <motion.button
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: links.length * 0.08 }}
-              onClick={onToggleTheme}
-              className="flex items-center gap-3 font-mono text-sm text-muted hover:text-text-primary transition-colors duration-300 mt-4"
-            >
-              {isDark ? <Sun size={16} /> : <Moon size={16} />}
-              {isDark ? 'Light Mode' : 'Dark Mode'}
-            </motion.button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            {extension === '.tsx' || extension === '.json' ? (
+              <FileCode2 size={15} aria-hidden="true" />
+            ) : (
+              <FileText size={15} aria-hidden="true" />
+            )}
+            <span className="file-name" data-extension={extension}>
+              {label}
+            </span>
+          </button>
+        ))}
+        <div className="sidebar-note">
+          <span className="availability-dot" />
+          Open to opportunities
+          <p>
+            Full stack & applied AI
+            <br />
+            Mumbai, India
+          </p>
+        </div>
+      </nav>
+      <div className="workspace-tabs" aria-label="Current page">
+        <span className="workspace-tab">
+          <FileText size={14} aria-hidden="true" />
+          {isBlog
+            ? location.pathname === '/blog' || location.pathname === '/blog/'
+              ? 'blog / index.md'
+              : 'blog / slm-notes.md'
+            : location.pathname === '/'
+              ? 'README.md'
+              : '404.md'}
+        </span>
+        <span className="workspace-tab-context">Siddhesh Todi</span>
+      </div>
     </>
   )
 }

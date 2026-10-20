@@ -1,41 +1,39 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
-import { posts } from '../../data/index.js'
+import OriginLink from '../ui/OriginLink'
+import { posts } from '../../data'
 
-export default function Blog() {
+export default function Blog({ showViewAll = true }) {
+  const Title = showViewAll ? 'h2' : 'h1'
   return (
-    <section id="blog" className="mx-auto max-w-7xl px-6 py-20">
-      <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+    <section id="blog" className="content-section">
+      <div className="section-heading">
         <div>
-          <p className="mb-2 text-sm font-medium uppercase tracking-[0.2em] text-accent">Writing</p>
-          <h2 className="font-display text-3xl md:text-4xl">Blog</h2>
+          <Title>Notes & writing</Title>
+          <p>What I’m building, studying, and figuring out.</p>
         </div>
-        <Link to="/blog" className="inline-flex items-center text-sm font-medium text-text-secondary transition-colors hover:text-accent">
-          View all posts →
-        </Link>
+        {showViewAll && <OriginLink to="/blog">View all posts →</OriginLink>}
       </div>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        {posts.map((p) => (
-          <article key={p.id} className="rounded-2xl border border-border bg-surface/60 p-6 shadow-lg shadow-black/5 transition duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-2xl">
-            {p.image && (
-              <img
-                src={p.image}
-                alt={p.title}
-                className="mb-4 h-40 w-full rounded-xl object-cover"
-                onError={(event) => {
-                  event.currentTarget.style.display = 'none'
-                }}
-              />
-            )}
-            <time className="mb-2 block text-sm text-muted">{p.date}</time>
-            <h3 className="mb-2 text-xl font-semibold text-text-primary">{p.title}</h3>
-            <p className="mb-4 text-text-secondary">{p.excerpt}</p>
-            <Link to={`/blog/${p.slug}`} className="inline-flex items-center gap-2 font-medium text-accent transition-colors hover:text-text-primary">
-              Read <span aria-hidden="true">→</span>
-            </Link>
-          </article>
-        ))}
+      <div className="blog-list">
+        {posts.map((post) => {
+          const words = post.content.reduce(
+            (count, block) =>
+              count +
+              (block.text || block.items?.join(' ') || '').split(/\s+/).length,
+            0
+          )
+          return (
+            <article key={post.id} className="blog-entry">
+              <div className="blog-entry-meta">
+                <time dateTime={post.date}>{post.date}</time>
+                <span>{Math.max(1, Math.ceil(words / 220))} min read</span>
+              </div>
+              <h3>{post.title}</h3>
+              <p>{post.excerpt}</p>
+              <OriginLink to={`/blog/${post.slug}`}>
+                Read <span aria-hidden="true">→</span>
+              </OriginLink>
+            </article>
+          )
+        })}
       </div>
     </section>
   )

@@ -1,9 +1,10 @@
-import { BrowserRouter, Route, Routes, Link } from 'react-router-dom'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import RouteScroll from './components/ui/RouteScroll'
+import BackLink from './components/ui/BackLink'
+import NotFound from './pages/NotFound'
 import { ThemeProvider } from './context/ThemeContext'
 import SmoothScroll from './components/anim/SmoothScroll'
-import CustomCursor from './components/ui/CustomCursor'
 import Navbar from './components/ui/Navbar'
-import ScrollProgress from './components/ui/ScrollProgress'
 import Hero from './components/sections/Hero'
 import About from './components/sections/About'
 import Skills from './components/sections/Skills'
@@ -18,7 +19,7 @@ import BlogPost from './pages/BlogPost'
 
 function HomePage() {
   return (
-    <main>
+    <main id="main-content" tabIndex={-1}>
       <Hero />
       <About />
       <Skills />
@@ -34,16 +35,11 @@ function HomePage() {
 
 function BlogIndexPage() {
   return (
-    <main className="mx-auto max-w-7xl px-6 pb-20 pt-28">
+    <main id="main-content" tabIndex={-1} className="blog-index-page">
       <div className="mb-8">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 text-sm font-medium text-accent transition-colors hover:text-text-primary"
-        >
-          ← Back to Portfolio
-        </Link>
+        <BackLink fallback="/#blog" />
       </div>
-      <Blog />
+      <Blog showViewAll={false} />
     </main>
   )
 }
@@ -51,18 +47,19 @@ function BlogIndexPage() {
 export default function App() {
   return (
     <ThemeProvider>
-      <BrowserRouter>
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
         <SmoothScroll />
-        <CustomCursor />
-        <ScrollProgress />
+        <RouteScroll />
         <Navbar />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/blog" element={<BlogIndexPage />} />
-          <Route path="/blog/:slug" element={<BlogPost />} />
-          <Route path="*" element={<BlogPost />} />
-        </Routes>
-        <Footer />
+        <div className="workspace-content">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/blog" element={<BlogIndexPage />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <Footer />
+        </div>
       </BrowserRouter>
     </ThemeProvider>
   )

@@ -4,9 +4,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        display: ['Space Grotesk', 'sans-serif'],
-        body: ['Inter', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        display: ['IBM Plex Mono', 'monospace'],
+        body: ['IBM Plex Mono', 'monospace'],
+        mono: ['IBM Plex Mono', 'monospace'],
       },
       colors: {
         bg: 'rgb(var(--color-bg) / <alpha-value>)',
