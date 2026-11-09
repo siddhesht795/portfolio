@@ -25,7 +25,7 @@ export const skills = [
     icon: '◈',
     color: '#a855f7',
     lightColor: '#c0622f',   // terracotta
-    items: ['ReactJS', 'Tailwind CSS', 'SASS', 'HTML', 'CSS', 'JavaScript'],
+    items: ['ReactJS', 'TanStack Query', 'Tailwind CSS', 'SASS', 'HTML', 'CSS', 'JavaScript'],
   },
   {
     category: 'Backend',
@@ -53,18 +53,40 @@ export const skills = [
     icon: '▣',
     color: '#ef4444',
     lightColor: '#991b1b',   // dark red
-    items: ['MongoDB', 'MySQL', 'SQL', 'NoSQL'],
+    items: ['MongoDB', 'PostgreSQL', 'MySQL', 'SQL', 'NoSQL'],
   },
   {
     category: 'Languages & Tools',
     icon: '◐',
     color: '#8b5cf6',
     lightColor: '#6d28d9',   // deep violet
-    items: ['Java', 'Python', 'JavaScript', 'GoLang', 'Git', 'GitHub', 'VS Code'],
+    items: ['Java', 'Python', 'JavaScript', 'GoLang', 'Docker', 'Git', 'GitHub', 'VS Code'],
   },
 ]
 
 export const projects = [
+  {
+    id: 3,
+    title: 'WhatsApp Expense Tracker',
+    subtitle: 'Ledger — Conversational Finance Dashboard',
+    year: '2026',
+    tech: ['FastAPI', 'React', 'PostgreSQL', 'Docker', 'TanStack Query', 'GLiNER2', 'Twilio'],
+    description:
+      'A full-stack expense tracker that turns WhatsApp messages into validated financial records, with a React dashboard for transactions, budgets, recurring payments, reports, and CSV imports and exports.',
+    highlights: [
+      'Jev intent classification and local GLiNER2 extraction with validation before saving transactions',
+      'WhatsApp-verified dashboard sessions and account-scoped APIs',
+      'Transaction corrections, category budgets, recurring reminders and automatic entries',
+      'TanStack Query caching and invalidation, plus duplicate webhook protection',
+      'Multi-stage Docker build that compiles React and serves the dashboard through FastAPI',
+    ],
+    problem: 'Logging everyday expenses is easy to put off, and reviewing spending needs more than a chat history.',
+    solution: 'Capture transactions in WhatsApp, then review, correct, and manage the same records in a private dashboard.',
+    github: 'https://github.com/yeetcoder777/wp-expense-tracker',
+    color: '#10b981',
+    lightColor: '#166534',
+    number: '01',
+  },
   {
     id: 1,
     title: 'Trip Genie',
@@ -85,29 +107,28 @@ export const projects = [
     github: 'https://github.com/siddhesht795/TripGenie',
     color: '#a855f7',
     lightColor: '#c0622f',   // terracotta
-    number: '01',
+    number: '02',
   },
   {
     id: 2,
     title: 'Sweepr',
     subtitle: 'Smart CLI Cleanup Tool',
     year: '2025',
-    tech: ['Node.js', 'Commander.js', 'Inquirer.js', 'Ora'],
+    tech: ['Node.js', 'Commander.js', 'Inquirer.js', 'Vitest'],
     description:
-      'A cross-platform CLI tool that reclaims disk space by detecting and safely removing inactive development environments.',
+      'A Node.js CLI that finds inactive projects and selectively cleans node_modules and Python virtual environments, with dry-run previews and recoverable system-trash cleanup.',
     highlights: [
-      'Smart Inactivity Detection via timestamp analysis',
-      'Soft-delete via system trash (recoverable)',
-      'Auto-generates requirements.txt for Python recovery',
-      'Parallel scanning + lifetime storage tracking',
+      'Recursive project discovery using source-file activity and configurable inactivity thresholds',
+      'Dry-run previews and interactive selection with bounded filesystem concurrency',
+      'System-trash cleanup and Python dependency exports for recovery',
+      'Persistent cleanup statistics and automated tests for scanning, configuration, and cleanup safeguards',
     ],
     problem: 'node_modules and venv folders silently eat gigabytes of disk space.',
     solution: 'Intelligent CLI that detects inactivity, not just file presence.',
-    impact: 'Recovered hundreds of GB across dev machines with zero data loss.',
     github: 'https://github.com/siddhesht795/sweepr',
     color: '#06b6d4',
     lightColor: '#0f766e',   // deep teal
-    number: '02',
+    number: '03',
   },
 ]
 
